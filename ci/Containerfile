@@ -1,0 +1,10 @@
+FROM registry.access.redhat.com/hi/go:latest-fips-builder@sha256:9b159a6371ac623f7a9170459efd2a3d96ab34ca37c3fcf215043865e1a40d0c
+
+USER root
+
+RUN mkdir -p /go /tmp/.cache/go-build /tmp/gomodcache && \
+    chmod 777 /go /tmp/.cache/go-build /tmp/gomodcache
+
+ENV GOPATH=/go
+ENV GOCACHE=/tmp/.cache/go-build
+ENV GOMODCACHE=/tmp/gomodcache
