@@ -8,7 +8,7 @@ Run `go test ./...` and `go build ./cmd/ecr-creds-sync`.
 
 ### LocalStack development
 
-LocalStack for AWS 4.10 introduced EKS Pod Identity and EKS Auth emulation. The current release is `2026.08.0`, which retains those capabilities. With an Ultimate account, set `LOCALSTACK_AUTH_TOKEN` and start the development services:
+LocalStack for AWS 4.10 introduced EKS Pod Identity and EKS Auth emulation. The current release is `2026.08.0`, which retains those capabilities. With an Ultimate account, set `LOCALSTACK_AUTH_TOKEN` and start the development services like so:
 
 ```bash
 export LOCALSTACK_AUTH_TOKEN=...
