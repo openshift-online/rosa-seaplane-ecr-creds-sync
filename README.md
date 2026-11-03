@@ -1,4 +1,4 @@
-# ECR credentials sync
+# AWS ECR credentials sync
 
 This controller replaces the management-cluster Quay pull-secret dependency for HyperShift HostedClusters. It uses the AWS SDK default credential chain, including EKS Pod Identity, to call `ecr:GetAuthorizationToken`.
 
