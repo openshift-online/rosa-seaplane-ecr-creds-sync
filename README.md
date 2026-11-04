@@ -1,6 +1,6 @@
 # AWS ECR credentials sync
 
-This controller replaces the management-cluster Quay pull-secret dependency for HyperShift HostedClusters on Seaplane. It uses the AWS SDK default credential chain, including EKS Pod Identity, to call `ecr:GetAuthorizationToken`.
+This controller replaces the management-cluster Quay pull-secret dependency for HyperShift HostedClusters. It uses the AWS SDK default credential chain, including EKS Pod Identity, to call `ecr:GetAuthorizationToken`.
 
 ## Development
 
@@ -45,8 +45,11 @@ For every `HostedCluster`, it reads `spec.pullSecret.name` and writes a Kubernet
 - `--aws-region` or `AWS_REGION`: AWS region. If omitted, the AWS SDK configuration is used.
 - `--aws-endpoint-url` or `AWS_ENDPOINT_URL`: optional endpoint override for LocalStack and other AWS emulators; leave unset in production.
 - `--refresh-after` or `REFRESH_AFTER`: duration between ECR authorization token refreshes. Defaults to `2h`.
+- `--source-secrets` or `SOURCE_SECRETS`: comma-separated list of Secret names in each HostedCluster namespace to read and merge into the pull-secret before writing ECR credentials. Use when another controller (e.g. External Secrets Operator) writes base credentials such as `quay.io` tokens to a separate Secret (e.g. `base-pull-secret`). The final pull-secret will contain all credentials from the source Secrets plus the fresh ECR token. Missing source Secrets are skipped with a log warning; malformed source Secrets are also skipped. When empty (default), only ECR credentials are written.
 
 The controller mints one ECR authorization token and keeps it in memory for all HostedClusters managed by the process. New HostedClusters reuse that token. After the refresh interval, the first reconciliation mints a replacement and subsequent reconciliations reuse it. The default refresh interval is 2 hours, while ECR authorization tokens are valid for 12 hours. A process restart clears the in-memory token and causes a new token to be minted on the first reconciliation.
+
+The controller watches owned Secrets and re-reconciles immediately when a source Secret is overwritten (e.g. by ESO), restoring the ECR credentials without waiting for the next scheduled refresh.
 
 ## Pod identity
 
