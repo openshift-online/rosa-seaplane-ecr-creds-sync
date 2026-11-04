@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -38,7 +39,7 @@ func refreshAfterFromEnv(value string) (time.Duration, error) {
 func main() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zap.Options{Development: false})))
 
-	var repository, region, endpoint string
+	var repository, region, endpoint, sourceSecretsRaw string
 	refreshAfter, err := refreshAfterFromEnv(os.Getenv("REFRESH_AFTER"))
 	if err != nil {
 		ctrl.Log.Error(err, "invalid refresh interval")
@@ -47,6 +48,7 @@ func main() {
 	flag.StringVar(&repository, "ecr-repository", os.Getenv("ECR_REPOSITORY"), "ECR repository URI, for example 123456789012.dkr.ecr.us-east-1.amazonaws.com/rosa/release")
 	flag.StringVar(&region, "aws-region", os.Getenv("AWS_REGION"), "AWS region; when empty, use the AWS SDK region configuration")
 	flag.StringVar(&endpoint, "aws-endpoint-url", os.Getenv("AWS_ENDPOINT_URL"), "optional AWS endpoint override for local emulators such as LocalStack")
+	flag.StringVar(&sourceSecretsRaw, "source-secrets", os.Getenv("SOURCE_SECRETS"), "comma-separated list of Secret names in each HCP namespace to merge into the pull-secret (e.g. base-pull-secret)")
 	flag.DurationVar(&refreshAfter, "refresh-after", refreshAfter, "time between ECR authorization token refreshes")
 	flag.Parse()
 
@@ -82,11 +84,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	var sourceSecrets []string
+	for _, s := range strings.Split(sourceSecretsRaw, ",") {
+		if s = strings.TrimSpace(s); s != "" {
+			sourceSecrets = append(sourceSecrets, s)
+		}
+	}
+
 	r := &controller.Reconciler{
-		Client:       mgr.GetClient(),
-		ECR:          ecr.NewFromConfig(awsConfig),
-		Repository:   repository,
-		RefreshAfter: refreshAfter,
+		Client:        mgr.GetClient(),
+		ECR:           ecr.NewFromConfig(awsConfig),
+		Repository:    repository,
+		RefreshAfter:  refreshAfter,
+		SourceSecrets: sourceSecrets,
 	}
 	if err := r.SetupWithManager(mgr, crcontroller.Options{MaxConcurrentReconciles: 4}); err != nil {
 		ctrl.Log.Error(err, "unable to create controller")
