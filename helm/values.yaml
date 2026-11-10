@@ -1,0 +1,37 @@
+ecrCredsSync:
+  # enabled controls whether the controller and its RBAC are deployed.
+  enabled: false
+
+  # Container image — pinned to a Konflux-built commit SHA.
+  # Mintmaker bumps this automatically when a new image is published.
+  image:
+    # renovate: datasource=docker
+    repository: quay.io/redhat-user-workloads/rosa-tenant/rosa-seaplane-ecr-creds-sync
+    tag: "f34824f"
+    pullPolicy: IfNotPresent
+
+  # ECR repository URI used to obtain the authorization token.
+  # Format: <account>.dkr.ecr.<region>.amazonaws.com/<repository>
+  ecrRepository: ""
+
+  # AWS region of the ECR registry.
+  awsRegion: ""
+
+  # How often the ECR authorization token is refreshed (ECR tokens are valid
+  # for 12 hours; default refresh of 2h provides a comfortable safety margin).
+  refreshAfter: "2h"
+
+  # Comma-separated list of Secret names in each HCP namespace to merge into
+  # the pull-secret before writing ECR credentials. Set to the name used by
+  # ECR_MIRROR_BASE_SECRET_NAME on the seaplane-operator (e.g. base-pull-secret)
+  # so ESO and ecr-creds-sync do not overwrite each other.
+  sourceSecrets: ""
+
+  # Resources for the controller container.
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
