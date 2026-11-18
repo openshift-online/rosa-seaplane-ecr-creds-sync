@@ -1,3 +1,13 @@
+{{- $registry := .Values.ecrCredsSync.image.registry -}}
+{{- $repository := .Values.ecrCredsSync.image.repository -}}
+{{- if not $registry -}}
+{{- if .Values.global.image_registry_account_id -}}
+{{- $registry = printf "%s.dkr.ecr.us-east-1.amazonaws.com" .Values.global.image_registry_account_id -}}
+{{- else -}}
+{{- $registry = "quay.io" -}}
+{{- $repository = "redhat-user-workloads/rosa-tenant/rosa-seaplane-ecr-creds-sync" -}}
+{{- end -}}
+{{- end -}}
 {{- if .Values.ecrCredsSync.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -21,7 +31,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: controller
-        image: {{ .Values.ecrCredsSync.image.repository }}:{{ .Values.ecrCredsSync.image.tag }}
+        image: "{{ $registry }}/{{ $repository }}:{{ .Values.ecrCredsSync.image.tag }}"
         imagePullPolicy: {{ .Values.ecrCredsSync.image.pullPolicy }}
         args:
         - --ecr-repository={{ .Values.ecrCredsSync.ecrRepository }}
