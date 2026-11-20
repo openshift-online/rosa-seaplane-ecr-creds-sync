@@ -15,7 +15,7 @@ export LOCALSTACK_AUTH_TOKEN=...
 make localstack
 ```
 
-This follows the LocalStack setup from HyperFleet PR 724: it runs `localstack/localstack-pro:latest` through Docker Compose compatibility, enables ECR, EC2, EKS, EKS Auth, IAM, and STS, mounts the container-engine socket, and waits for the health endpoint. The LocalStack EKS provider and credential webhook can then be used for a Pod Identity development cluster according to the [LocalStack EKS documentation](https://docs.localstack.cloud/aws/services/eks/). This is preferable to pretending a kind node has EKS Pod Identity.
+This follows the LocalStack setup from [rosa-seaplane#724](https://github.com/openshift-online/rosa-seaplane/pull/724): it runs `localstack/localstack-pro:latest` through Docker Compose compatibility, enables ECR, EC2, EKS, EKS Auth, IAM, and STS, mounts the container-engine socket, and waits for the health endpoint. The LocalStack EKS provider and credential webhook can then be used for a Pod Identity development cluster according to the [LocalStack EKS documentation](https://docs.localstack.cloud/aws/services/eks/). This is preferable to pretending a kind node has EKS Pod Identity.
 
 For rootless Podman, the launcher starts the user socket, maps `${XDG_RUNTIME_DIR}/podman/podman.sock` into LocalStack as `/var/run/docker.sock`, and uses the `DOCKER_HOST`/`DOCKER_SOCK` Docker-API settings. The LocalStack image does not contain a Podman or Docker CLI, so `DOCKER_CMD` is intentionally not set:
 
