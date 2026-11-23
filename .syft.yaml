@@ -1,0 +1,25 @@
+# Syft configuration for the Konflux container build.
+#
+# Scope: the buildah task invokes Syft from the repository root, which is how this file
+# is found, and it does so for BOTH of its scans -- the source scan of the build context
+# and the scan of the built image's filesystem. Patterns therefore apply to both, each
+# resolved against that scan's own root. Take care when adding entries: a pattern such
+# as './bin' would match inside the image and silently drop real packages from the
+# published SBOM. The entry below matches nothing in the image, so that scan is
+# unaffected.
+#
+# hack/tools is a tools-only Go module that exists solely to pin and build
+# golangci-lint. Nothing under it reaches the image: the Dockerfile builds
+# ./cmd/ecr-creds-sync from the root module, hack/tools is a separate module, and no
+# go.work joins the two. Excluding it keeps the source SBOM a description of what the
+# image is actually built from, instead of attributing lint-only dependencies to the
+# shipped artifact. Scanning stays enabled and the catalogers are untouched, so the root
+# module's dependencies are still reported in full.
+#
+# The exclusion is by path, not by module, and a pattern that matches nothing is
+# silently ignored -- so if hack/tools is ever moved or renamed, update this file or the
+# lint-only dependencies will quietly reappear. The hack/tools entry in .dockerignore is
+# a separate concern (build context size) and affects neither SBOM; neither file makes
+# the other redundant.
+exclude:
+  - ./hack/tools
