@@ -5,8 +5,16 @@ ecrCredsSync:
   # Container image — pinned to a Konflux-built commit SHA.
   # Mintmaker bumps this automatically when a new image is published.
   image:
-    # renovate: datasource=docker
-    repository: quay.io/redhat-user-workloads/rosa-tenant/rosa-seaplane-ecr-creds-sync
+    # Set a registry to use an explicit registry host. Empty derives the registry from
+    # global.image_registry_account_id (ECR); falls back to quay.io when that is also unset.
+    # NOTE: when relying on the automatic quay.io fallback, the deployment template
+    # substitutes the full Konflux org path (redhat-user-workloads/rosa-tenant/rosa-seaplane-ecr-creds-sync)
+    # as the repository. Setting registry: "quay.io" explicitly bypasses this substitution
+    # and would produce an invalid reference — use the full org as the registry value instead:
+    # registry: "quay.io/redhat-user-workloads/rosa-tenant"
+    registry: ""
+    # renovate: datasource=docker depName=quay.io/redhat-user-workloads/rosa-tenant/rosa-seaplane-ecr-creds-sync
+    repository: rosa-seaplane-ecr-creds-sync
     tag: "f34824f"
     pullPolicy: IfNotPresent
 
@@ -35,3 +43,8 @@ ecrCredsSync:
     limits:
       cpu: 200m
       memory: 128Mi
+
+# Global values injected by the ArgoCD ApplicationSet valuesObject.
+# Not set here — always provided at runtime.
+global:
+  image_registry_account_id: ""
